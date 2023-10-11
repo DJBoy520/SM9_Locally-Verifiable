@@ -77,10 +77,10 @@ def verify_aggregate_locally(master_public, identity, msg, signature):
     h1_P2 = ec.multiply(P2, h1)
     P3 = ec.add(h1_P2, Ppub)
 
-    v_aux1 = ate.pairing(K, aux1)
-    v_aux2 = ate.pairing(P1, aux2)
-    if v_aux1 != v_aux2:
-        return FAILURE
+    # v_aux1 = ate.pairing(K, aux1)
+    # v_aux2 = ate.pairing(P1, aux2)
+    # if v_aux1 != v_aux2:
+    #     return FAILURE
 
     h_aux1_aux2 = ec.add(ec.multiply(aux1, h), aux2)
     v1 = ate.pairing(S, h_aux1_aux2)
@@ -107,7 +107,6 @@ if __name__ == '__main__':
 
     cartesian_product = [item1 + item2 for item1 in messages1 for item2 in messages2]
     print(type(cartesian_product[0]))
-
 
     signature = sign_aggregate_locally(master_public, Da, cartesian_product, 5)
 
