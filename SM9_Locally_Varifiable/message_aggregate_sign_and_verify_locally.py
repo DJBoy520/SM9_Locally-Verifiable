@@ -6,6 +6,7 @@ import gmssl.optimized_curve as ec
 from util.util import str2hexbytes, h2rf
 import gmssl.optimized_field_elements as fq
 from util.util import calculate_coefficient_with_modulus
+from tqdm import tqdm
 
 FAILURE = False
 SUCCESS = True
@@ -19,24 +20,24 @@ def sign_aggregate_locally(master_public, Da, msgs, index_mj):
     r = rand_gen.randrange(ec.curve_order)
     Ws = []
 
-    for i in range(len(msgs)):
+    for i in tqdm(range(len(msgs)), desc="Processing"):
         w = ec.multiply(Ppub, (r ** (i + 1)) % ec.curve_order)
         Ws.append(w)
 
     hs = []
-    for i in range(len(msgs)):
+    for i in tqdm(range(len(msgs)), desc="Processing"):
         msg_hash = sm3_hash(str2hexbytes(msgs[i]))
         z = msg_hash.encode('utf-8')
         h = h2rf(2, z, ec.curve_order)
         hs.append(h)
 
     ls_inv = []
-    for i in range(len(msgs)):
+    for i in tqdm(range(len(msgs)), desc="Processing"):
         l = (r + hs[i]) % ec.curve_order
         ls_inv.append(fq.prime_field_inv(l, ec.curve_order))
 
     l_inv = 1
-    for i in range(len(ls_inv)):
+    for i in tqdm(range(len(ls_inv)), desc="Processing"):
         l_inv = (l_inv * ls_inv[i]) % ec.curve_order
 
     S = ec.multiply(Da, l_inv)
@@ -46,12 +47,12 @@ def sign_aggregate_locally(master_public, Da, msgs, index_mj):
 
     aux1 = ec.multiply(Ppub, coefficients_without_mj[0])
     C = coefficients_without_mj[1::][::-1]
-    for i in range(len(C)):
+    for i in tqdm(range(len(C)), desc="Processing"):
         b_w = ec.multiply(Ws[i], C[i])
         aux1 = ec.add(b_w, aux1)
 
     aux2 = ec.multiply(Ws[0], coefficients_without_mj[0])
-    for i in range(len(C)):
+    for i in tqdm(range(len(C)), desc="Processing"):
         b_w = ec.multiply(Ws[i + 1], C[i])
         aux2 = ec.add(b_w, aux2)
 
@@ -77,10 +78,10 @@ def verify_aggregate_locally(master_public, identity, msg, signature):
     h1_P2 = ec.multiply(P2, h1)
     P3 = ec.add(h1_P2, Ppub)
 
-    # v_aux1 = ate.pairing(K, aux1)
-    # v_aux2 = ate.pairing(P1, aux2)
-    # if v_aux1 != v_aux2:
-    #     return FAILURE
+    v_aux1 = ate.pairing(K, aux1)
+    v_aux2 = ate.pairing(P1, aux2)
+    if v_aux1 != v_aux2:
+        return FAILURE
 
     h_aux1_aux2 = ec.add(ec.multiply(aux1, h), aux2)
     v1 = ate.pairing(S, h_aux1_aux2)

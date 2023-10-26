@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="dj@192.168.117.128:22 password" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="sm9" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
     <option name="confirmBeforeUploading" value="false" />
     <serverData>
-      <paths name="dj@192.168.117.128:22 password">
+      <paths name="sm9">
         <serverdata>
           <mappings>
-            <mapping deploy="/SM9_Locally-Verifiable" local="$PROJECT_DIR$" />
+            <mapping deploy="/home/dj/WorkSpaces/SM9_Locally-Verifiable/" local="$PROJECT_DIR$/" web="/" />
           </mappings>
         </serverdata>
       </paths>

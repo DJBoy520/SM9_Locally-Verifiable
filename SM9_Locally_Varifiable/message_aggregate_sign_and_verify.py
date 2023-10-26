@@ -5,6 +5,7 @@ from random import SystemRandom
 import gmssl.optimized_curve as ec
 from util.util import str2hexbytes, h2rf
 import gmssl.optimized_field_elements as fq
+from tqdm import tqdm
 
 FAILURE = False
 SUCCESS = True
@@ -29,12 +30,12 @@ def sign_aggregate(master_public, Da, msgs):
         hs.append(h)
 
     ls_inv = []
-    for i in range(len(msgs)):
+    for i in tqdm(range(len(msgs)), desc="Processing"):
         l = (r + hs[i]) % ec.curve_order
         ls_inv.append(fq.prime_field_inv(l, ec.curve_order))
 
     l_inv = 1
-    for i in range(len(ls_inv)):
+    for i in tqdm(range(len(ls_inv)), desc="Processing"):
         l_inv = (l_inv * ls_inv[i]) % ec.curve_order
 
     S = ec.multiply(Da, l_inv)
@@ -51,7 +52,7 @@ def verify_aggregate(master_public, identity, msgs, signature):
     Ppub = master_public[2]
 
     hs = []
-    for i in range(len(msgs)):
+    for i in tqdm(range(len(msgs)), desc="Processing"):
         msg_hash = sm3_hash(str2hexbytes(msgs[i]))
         z = msg_hash.encode('utf-8')
         h = h2rf(2, z, ec.curve_order)
@@ -66,7 +67,7 @@ def verify_aggregate(master_public, identity, msgs, signature):
 
     T = ec.multiply(Ppub, coefficients[0])
     C = coefficients[1::][::-1]
-    for i in range(len(C)):
+    for i in tqdm(range(len(C)), desc="Processing"):
         b_w = ec.multiply(Ws[i], C[i])
         T = ec.add(b_w, T)
 
@@ -95,7 +96,6 @@ if __name__ == '__main__':
 
     cartesian_product = [item1 + item2 for item1 in messages1 for item2 in messages2]
     print(type(cartesian_product[0]))
-
 
     signature = sign_aggregate(master_public, Da, cartesian_product)
 
