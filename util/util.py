@@ -1,3 +1,5 @@
+import sys
+
 from sympy import symbols, expand, nextprime
 from math import ceil, floor, log
 import binascii
@@ -69,16 +71,43 @@ def calculate_coefficient_with_modulus(constants, N):
     return C
 
 
+def get_object_size(obj, seen=None):
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+
+    if obj_id in seen:
+        # 如果对象已经被处理过，不重复计算
+        return 0
+
+    seen.add(obj_id)
+    size = sys.getsizeof(obj)
+
+    if hasattr(obj, '__dict__'):
+        size += get_object_size(obj.__dict__, seen)
+
+    if isinstance(obj, (list, tuple, set, frozenset)):
+        size += sum(get_object_size(item, seen) for item in obj)
+
+    if isinstance(obj, dict):
+        size += sum(get_object_size(key, seen) + get_object_size(value, seen) for key, value in obj.items())
+
+    return size
+
+
 if __name__ == '__main__':
-    # 示例用法
-    N = 2 ** 256  # 替换为你希望的 x 值
-    prime = nextprime(N)
+    # # 示例用法
+    # N = 2 ** 256  # 替换为你希望的 x 值
+    # prime = nextprime(N)
+    #
+    # constants = [5876578657657657657623452345, 23452345234524523461452345, 23452345134523451234523452345,
+    #              234523452345256365679967823413441234,
+    #              23452345234525636567996782341344123423452345256365679967823413441234234523452345256365679967823413441234234523452345256365679967823413441234,
+    #              2345234523452563656799678234134412342345234523452563656799678234234523452345256365679967823413441234234523452345256365679967823413441234,
+    #              23452345234525636567996782341344123423452346365679967823413441234234523452345256365679967823413441234234523452345256365679967823413441234234523452345256365679967823413441234]
+    # coefficients = calculate_coefficient_with_modulus(constants, prime)
+    #
+    # print(coefficients)
 
-    constants = [5876578657657657657623452345, 23452345234524523461452345, 23452345134523451234523452345,
-                 234523452345256365679967823413441234,
-                 23452345234525636567996782341344123423452345256365679967823413441234234523452345256365679967823413441234234523452345256365679967823413441234,
-                 2345234523452563656799678234134412342345234523452563656799678234234523452345256365679967823413441234234523452345256365679967823413441234,
-                 23452345234525636567996782341344123423452346365679967823413441234234523452345256365679967823413441234234523452345256365679967823413441234234523452345256365679967823413441234]
-    coefficients = calculate_coefficient_with_modulus(constants, prime)
-
-    print(coefficients)
+    print(get_object_size(()))
+    print(get_object_size(385649684165489465135196874489644321564231321))
